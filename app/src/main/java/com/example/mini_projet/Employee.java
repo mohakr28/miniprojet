@@ -15,6 +15,9 @@ public class Employee {
         this.imageUri = imageUri;
     }
 
+    public Employee(int anInt, String string, String string1) {
+    }
+
     // Getters and Setters
     public int getId() {
         return id;

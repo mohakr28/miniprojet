@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private EmployeeAdapter adapter;
     private EmployeeDatabaseHelper dbHelper;
     private Button addEmployeeButton;
+    private EditText searchEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         // Initialize views
         recyclerView = findViewById(R.id.recyclerView);
         addEmployeeButton = findViewById(R.id.addEmployeeButton);
+        searchEditText = findViewById(R.id.searchEditText);
 
         // Initialize database helper
         dbHelper = new EmployeeDatabaseHelper(this);
@@ -40,13 +44,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Add Employee button click listener
-        addEmployeeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Start AddEmployeeActivity when button is clicked
-                Intent intent = new Intent(MainActivity.this, AddEmployeeActivity.class);
-                startActivity(intent);
-            }
+        addEmployeeButton.setOnClickListener(v -> {
+            // Start AddEmployeeActivity when button is clicked
+            Intent intent = new Intent(MainActivity.this, AddEmployeeActivity.class);
+            startActivity(intent);
         });
 
         // Check and request media permissions
@@ -54,6 +55,21 @@ public class MainActivity extends AppCompatActivity {
 
         // Load employees from the database
         loadEmployees();
+
+        // Search functionality
+        searchEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                // Filter the employee list based on search input
+                filterEmployees(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable editable) {}
+        });
     }
 
     @Override
@@ -68,14 +84,12 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // For Android 13 and above, request READ_MEDIA_IMAGES
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        android.Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_MEDIA_PERMISSION);
+                ActivityCompat.requestPermissions(this, new String[]{ android.Manifest.permission.READ_MEDIA_IMAGES }, REQUEST_MEDIA_PERMISSION);
             }
         } else {
             // For older versions, request READ_EXTERNAL_STORAGE
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_MEDIA_PERMISSION);
+                ActivityCompat.requestPermissions(this, new String[]{ android.Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_MEDIA_PERMISSION);
             }
         }
     }
@@ -85,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        // Check if the requested permission was for media access
         if (requestCode == REQUEST_MEDIA_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, continue with file operations
@@ -103,11 +116,33 @@ public class MainActivity extends AppCompatActivity {
 
         // If the adapter is not yet initialized, initialize it
         if (adapter == null) {
-            adapter = new EmployeeAdapter(employees);
+            adapter = new EmployeeAdapter(employees, new EmployeeAdapter.OnEmployeeDeleteListener() {
+                @Override
+                public void onDelete(Employee employee) {
+                    // Delete the employee from the database
+                    dbHelper.deleteEmployee(employee.getId());
+                    Toast.makeText(MainActivity.this, "Employee deleted", Toast.LENGTH_SHORT).show();
+                    loadEmployees(); // Refresh the list after deletion
+                }
+            });
             recyclerView.setAdapter(adapter);
         } else {
             // If the adapter is already initialized, just update the list
             adapter.updateEmployeeList(employees);
         }
+    }
+
+    // Function to filter employees based on the search query
+    private void filterEmployees(String query) {
+        List<Employee> filteredList = new ArrayList<>();
+        for (Employee employee : dbHelper.getAllEmployees()) {
+            if (employee.getFirstName().toLowerCase().contains(query.toLowerCase()) ||
+                    employee.getLastName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(employee);
+            }
+        }
+
+        // Update the adapter with the filtered list
+        adapter.updateEmployeeList(filteredList);
     }
 }

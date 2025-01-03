@@ -5,19 +5,26 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
-
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder> {
 
     private List<Employee> employeeList;
+    private OnEmployeeDeleteListener deleteListener;
 
-    public EmployeeAdapter(List<Employee> employeeList) {
+    // Listener interface for delete action
+    public interface OnEmployeeDeleteListener {
+        void onDelete(Employee employee);
+    }
+
+    public EmployeeAdapter(List<Employee> employeeList, OnEmployeeDeleteListener deleteListener) {
         this.employeeList = employeeList;
+        this.deleteListener = deleteListener;
     }
 
     @Override
@@ -29,22 +36,32 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     @Override
     public void onBindViewHolder(EmployeeViewHolder holder, int position) {
         Employee employee = employeeList.get(position);
+
+        // Set employee details in the UI
         holder.firstName.setText(employee.getFirstName());
         holder.lastName.setText(employee.getLastName());
         holder.phone.setText(employee.getPhone());
         holder.email.setText(employee.getEmail());
 
-        // If image URI exists, load it into ImageView
+        // Load image if URI exists
         String imageUri = employee.getImageUri();
         if (imageUri != null && !imageUri.isEmpty()) {
-            Uri uri = Uri.parse(imageUri);  // Convert String to Uri
-            holder.employeeImage.setImageURI(uri);  // Set the image using the Uri
+            Uri uri = Uri.parse(imageUri);
+            holder.employeeImage.setImageURI(uri);
         }
 
+        // Edit functionality on item click
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(holder.itemView.getContext(), EditEmployeeActivity.class);
             intent.putExtra("employee_id", employee.getId());
             holder.itemView.getContext().startActivity(intent);
+        });
+
+        // Delete functionality on delete button click
+        holder.deleteButton.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDelete(employee);
+            }
         });
     }
 
@@ -56,6 +73,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     public static class EmployeeViewHolder extends RecyclerView.ViewHolder {
         TextView firstName, lastName, phone, email;
         ImageView employeeImage;
+        Button deleteButton;
 
         public EmployeeViewHolder(View itemView) {
             super(itemView);
@@ -64,12 +82,13 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
             phone = itemView.findViewById(R.id.phone);
             email = itemView.findViewById(R.id.email);
             employeeImage = itemView.findViewById(R.id.employeeImage);
+            deleteButton = itemView.findViewById(R.id.deleteButton);
         }
     }
 
     // Method to update the employee list in the adapter
     public void updateEmployeeList(List<Employee> newEmployeeList) {
         this.employeeList = newEmployeeList;
-        notifyDataSetChanged();  // Notify the adapter that the data has changed
+        notifyDataSetChanged();
     }
 }

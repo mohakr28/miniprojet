@@ -35,9 +35,8 @@ public class EmployeeDatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_PHONE + " TEXT, "
                 + COLUMN_EMAIL + " TEXT, "
                 + COLUMN_IMAGE_RES_ID + " TEXT)";
-        db.execSQL(CREATE_TABLE);  // إضافة هذه السطر لتنفيذ الاستعلام وإنشاء الجدول
+        db.execSQL(CREATE_TABLE);
     }
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -45,7 +44,7 @@ public class EmployeeDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-// Add employee to database
+    // Add employee to database
     public void addEmployee(Employee employee) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -79,6 +78,7 @@ public class EmployeeDatabaseHelper extends SQLiteOpenHelper {
         }
         return null;
     }
+
     // Update employee
     public boolean updateEmployee(int id, String firstName, String lastName, String phone, String email) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -114,4 +114,39 @@ public class EmployeeDatabaseHelper extends SQLiteOpenHelper {
         }
         return employeeList;
     }
+
+    // Function to delete an employee by ID
+    public void deleteEmployee(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("employees", "id = ?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    // Function to search employees by name or role
+    public List<Employee> searchEmployees(String query) {
+        List<Employee> employees = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM employees WHERE first_name LIKE ? OR last_name LIKE ?",
+                new String[]{"%" + query + "%", "%" + query + "%"}
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                @SuppressLint("Range") Employee employee = new Employee(
+                        cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_FIRST_NAME)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_LAST_NAME)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_PHONE)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_EMAIL)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_IMAGE_RES_ID))
+                );
+                employees.add(employee);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return employees;
+    }
+
 }
