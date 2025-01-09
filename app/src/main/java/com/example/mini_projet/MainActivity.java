@@ -7,11 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
     private EmployeeDatabaseHelper dbHelper;
     private Button addEmployeeButton;
     private EditText searchEditText;
+    private RadioGroup viewModeRadioGroup;
+    private RadioButton radioListView;
+    private RadioButton radioGridView;
+    private static final int REQUEST_CALL_PERMISSION = 1;
+    private static final int REQUEST_SMS_PERMISSION = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +44,14 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         addEmployeeButton = findViewById(R.id.addEmployeeButton);
         searchEditText = findViewById(R.id.searchEditText);
+        viewModeRadioGroup = findViewById(R.id.viewModeRadioGroup);
+        radioListView = findViewById(R.id.radioListView);
+        radioGridView = findViewById(R.id.radioGridView);
 
         // Initialize database helper
         dbHelper = new EmployeeDatabaseHelper(this);
 
-        // Set up RecyclerView with a linear layout manager
+        // Set default layout manager (ListView mode)
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Add Employee button click listener
@@ -70,6 +81,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(android.text.Editable editable) {}
         });
+
+        // Set up the RadioGroup listener to switch between ListView and GridView
+        viewModeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioListView) {
+                // Set RecyclerView to ListView layout
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            } else if (checkedId == R.id.radioGridView) {
+                // Set RecyclerView to GridView layout (2 columns in this example)
+                recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+            }
+        });
     }
 
     @Override
@@ -92,6 +114,15 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{ android.Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_MEDIA_PERMISSION);
             }
         }
+        // Check and request call permission
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
+        }
+
+        // Check and request SMS permission
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.SEND_SMS}, REQUEST_SMS_PERMISSION);
+        }
     }
 
     // Function to handle the result of permission requests
@@ -106,6 +137,24 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // Permission denied, handle accordingly
                 Toast.makeText(this, "Media access permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+        if(requestCode== REQUEST_CALL_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // إذن الاتصال الهاتفي تم منحه
+                Toast.makeText(this, "Call permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                // إذن الاتصال الهاتفي تم رفضه
+                Toast.makeText(this, "Call permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+        if(requestCode== REQUEST_SMS_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // إذن الرسائل النصية تم منحه
+                Toast.makeText(this, "SMS permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+                // إذن الرسائل النصية تم رفضه
+                Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }

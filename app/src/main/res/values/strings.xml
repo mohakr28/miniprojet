@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">mini_projet</string>
+    <string-array name="view_modes">
+        <item>List View</item>
+        <item>Grid View</item>
+    </string-array>
+
 </resources>

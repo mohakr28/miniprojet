@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder> {
 
     private List<Employee> employeeList;
@@ -63,6 +64,42 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
                 deleteListener.onDelete(employee);
             }
         });
+
+        // Call functionality on phone button click
+        if (employee.getPhone() != null && !employee.getPhone().isEmpty()) {
+            holder.contactPhoneButton.setVisibility(View.VISIBLE);
+            holder.contactPhoneButton.setOnClickListener(v -> {
+                Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                callIntent.setData(Uri.parse("tel:" + employee.getPhone()));
+                holder.itemView.getContext().startActivity(callIntent);
+            });
+        } else {
+            holder.contactPhoneButton.setVisibility(View.GONE);
+        }
+
+        // SMS functionality on SMS button click
+        if (employee.getPhone() != null && !employee.getPhone().isEmpty()) {
+            holder.contactSmsButton.setVisibility(View.VISIBLE);
+            holder.contactSmsButton.setOnClickListener(v -> {
+                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                smsIntent.setData(Uri.parse("smsto:" + employee.getPhone()));
+                holder.itemView.getContext().startActivity(smsIntent);
+            });
+        } else {
+            holder.contactSmsButton.setVisibility(View.GONE);
+        }
+
+        // Email functionality on email button click
+        if (employee.getEmail() != null && !employee.getEmail().isEmpty()) {
+            holder.contactEmailButton.setVisibility(View.VISIBLE);
+            holder.contactEmailButton.setOnClickListener(v -> {
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setData(Uri.parse("mailto:" + employee.getEmail()));
+                holder.itemView.getContext().startActivity(emailIntent);
+            });
+        } else {
+            holder.contactEmailButton.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -73,7 +110,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     public static class EmployeeViewHolder extends RecyclerView.ViewHolder {
         TextView firstName, lastName, phone, email;
         ImageView employeeImage;
-        Button deleteButton;
+        Button deleteButton, contactPhoneButton, contactSmsButton, contactEmailButton;
 
         public EmployeeViewHolder(View itemView) {
             super(itemView);
@@ -83,6 +120,9 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
             email = itemView.findViewById(R.id.email);
             employeeImage = itemView.findViewById(R.id.employeeImage);
             deleteButton = itemView.findViewById(R.id.deleteButton);
+            contactPhoneButton = itemView.findViewById(R.id.contactPhoneButton);
+            contactSmsButton = itemView.findViewById(R.id.contactSmsButton);
+            contactEmailButton = itemView.findViewById(R.id.contactEmailButton);
         }
     }
 
