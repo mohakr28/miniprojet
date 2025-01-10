@@ -38,9 +38,21 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         this.isGridView = isGridView; // Set the view type
     }
 
+    // Method to update the employee list in the adapter
+    public void updateEmployeeList(List<Employee> newEmployeeList) {
+        this.employeeList = newEmployeeList;
+        notifyDataSetChanged();
+    }
+
+    // Method to update view type (Grid or List)
+    public void updateViewType(boolean isGridView) {
+        this.isGridView = isGridView;
+        notifyDataSetChanged();  // Refresh the RecyclerView with the new view type
+    }
+
     @Override
     public EmployeeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // نختار الـ layout بناءً على isGridView
+        // Select layout based on view type (Grid or List)
         int layoutRes = isGridView ? R.layout.item_employee_grid : R.layout.item_employee_list;
         View view = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         return new EmployeeViewHolder(view);
@@ -58,20 +70,10 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
 
         // Load image if URI exists
         String imageUri = employee.getImageUri();
-        if (imageUri != null && !imageUri.isEmpty()) {
-            try {
-                loadImage(holder.itemView.getContext(), imageUri, holder.employeeImage);
-            } catch (Exception e) {
-                holder.employeeImage.setImageResource(R.drawable.ic_person); // صورة افتراضية
-                Log.e("EmployeeAdapter", "Error loading image: " + e.getMessage(), e);
-            }
-        } else {
-            holder.employeeImage.setImageResource(R.drawable.ic_person); // صورة افتراضية
-        }
+        loadImage(holder.itemView.getContext(), imageUri, holder.employeeImage);
 
         // Handle the layout differently based on the view type (Grid or List)
         if (isGridView) {
-            // Grid view: image on top, info below, then icons at the bottom
             holder.employeeImage.setVisibility(View.VISIBLE);
             holder.firstName.setVisibility(View.VISIBLE);
             holder.lastName.setVisibility(View.VISIBLE);
@@ -81,7 +83,6 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
             holder.contactSmsButton.setVisibility(View.VISIBLE);
             holder.contactEmailButton.setVisibility(View.VISIBLE);
         } else {
-            // List view: no changes needed
             holder.employeeImage.setVisibility(View.VISIBLE);
             holder.firstName.setVisibility(View.VISIBLE);
             holder.lastName.setVisibility(View.VISIBLE);
@@ -107,7 +108,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         });
 
         // Call functionality on phone button click
-        if (employee.getPhone() != null && !employee.getPhone().isEmpty()) {
+        if (isNotEmpty(employee.getPhone())) {
             holder.contactPhoneButton.setVisibility(View.VISIBLE);
             holder.contactPhoneButton.setOnClickListener(v -> {
                 Intent callIntent = new Intent(Intent.ACTION_DIAL);
@@ -119,7 +120,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         }
 
         // SMS functionality on SMS button click
-        if (employee.getPhone() != null && !employee.getPhone().isEmpty()) {
+        if (isNotEmpty(employee.getPhone())) {
             holder.contactSmsButton.setVisibility(View.VISIBLE);
             holder.contactSmsButton.setOnClickListener(v -> {
                 Intent smsIntent = new Intent(Intent.ACTION_VIEW);
@@ -131,7 +132,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         }
 
         // Email functionality on email button click
-        if (employee.getEmail() != null && !employee.getEmail().isEmpty()) {
+        if (isNotEmpty(employee.getEmail())) {
             holder.contactEmailButton.setVisibility(View.VISIBLE);
             holder.contactEmailButton.setOnClickListener(v -> {
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
@@ -146,6 +147,11 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     @Override
     public int getItemCount() {
         return employeeList.size();
+    }
+
+    // Method to check if a string is not empty or null
+    private boolean isNotEmpty(String str) {
+        return str != null && !str.isEmpty();
     }
 
     public static class EmployeeViewHolder extends RecyclerView.ViewHolder {
@@ -167,31 +173,29 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         }
     }
 
-    // Method to update the employee list in the adapter
-    public void updateEmployeeList(List<Employee> newEmployeeList) {
-        this.employeeList = newEmployeeList;
-        notifyDataSetChanged();
-    }
-
     private static final String TAG = "EmployeeAdapter";
 
+    // Optimized method for loading images
     public static void loadImage(Context context, String imageUri, ImageView imageView) {
         try {
-            Uri uri = Uri.parse(imageUri);
-            ContentResolver resolver = context.getContentResolver();
+            if (imageUri != null && !imageUri.isEmpty()) {
+                Uri uri = Uri.parse(imageUri);
+                ContentResolver resolver = context.getContentResolver();
 
-            try (InputStream inputStream = resolver.openInputStream(uri)) {
-                if (inputStream != null) {
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                    imageView.setImageBitmap(bitmap);
-                } else {
-                    Log.e(TAG, "Unable to open InputStream for URI: " + uri);
-                    imageView.setImageResource(R.drawable.ic_person);
+                try (InputStream inputStream = resolver.openInputStream(uri)) {
+                    if (inputStream != null) {
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        imageView.setImageBitmap(bitmap);
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_person);
+                    }
                 }
+            } else {
+                imageView.setImageResource(R.drawable.ic_person); // Default image
             }
         } catch (Exception e) {
             Log.e(TAG, "Error loading image: " + e.getMessage(), e);
-            imageView.setImageResource(R.drawable.ic_person);
+            imageView.setImageResource(R.drawable.ic_person); // Default image in case of error
         }
     }
 }

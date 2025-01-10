@@ -25,15 +25,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_MEDIA_PERMISSION = 1; // Request code for media permission
+    private static final int REQUEST_MEDIA_PERMISSION = 1;
     private RecyclerView recyclerView;
     private EmployeeAdapter adapter;
     private EmployeeDatabaseHelper dbHelper;
     private Button addEmployeeButton;
     private EditText searchEditText;
     private Spinner viewModeSpinner;
-    private static final int REQUEST_CALL_PERMISSION = 1;
-    private static final int REQUEST_SMS_PERMISSION = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 editor.apply(); // Save the selected mode
+
+                // Update the adapter to reflect the new view mode
+                updateAdapterViewType(position == 1); // Pass true for grid view, false for list view
             }
 
             @Override
@@ -131,74 +132,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Function to check if media permissions are granted
-    private void checkStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // For Android 13 and above, request READ_MEDIA_IMAGES
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_MEDIA_PERMISSION);
-            }
-        } else {
-            // For older versions, request READ_EXTERNAL_STORAGE
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_MEDIA_PERMISSION);
-            }
-        }
-        // Check and request call permission
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
-        }
-
-        // Check and request SMS permission
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.SEND_SMS}, REQUEST_SMS_PERMISSION);
-        }
-    }
-
-    // Function to handle the result of permission requests
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_MEDIA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Media access permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Media access permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-        if (requestCode == REQUEST_CALL_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Call permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Call permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-        if (requestCode == REQUEST_SMS_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "SMS permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     // Function to load employees from the database and update the RecyclerView
     private void loadEmployees() {
         List<Employee> employees = dbHelper.getAllEmployees();
-        boolean isGridView = true;
+        SharedPreferences preferences = getSharedPreferences("ViewModePrefs", MODE_PRIVATE);
+        String savedViewMode = preferences.getString("view_mode", "list");
+        boolean isGridView = "grid".equals(savedViewMode);
+
         if (adapter == null) {
             adapter = new EmployeeAdapter(employees, employee -> {
                 dbHelper.deleteEmployee(employee.getId());
                 Toast.makeText(MainActivity.this, "Employee deleted", Toast.LENGTH_SHORT).show();
                 loadEmployees(); // Refresh the list after deletion
-            },isGridView);
+            }, isGridView);
             recyclerView.setAdapter(adapter);
         } else {
             adapter.updateEmployeeList(employees);
         }
     }
 
+    // Function to update the adapter view type (list or grid)
+    private void updateAdapterViewType(boolean isGridView) {
+        if (adapter != null) {
+            adapter.updateViewType(isGridView); // Update the adapter to switch between list/grid
+        }
+    }
 
     // Function to filter employees based on the search query
     private void filterEmployees(String query) {
