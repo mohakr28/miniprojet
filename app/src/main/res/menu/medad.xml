@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/medaad">
+    <item
+        android:id="@+id/menu_view_all"
+        android:title="View All Employees"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_add_employee"
+        android:title="Add Employee"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:title="Settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_logout"
+        android:title="Logout"
+        app:showAsAction="never" />
+</menu>
