@@ -63,7 +63,5 @@ public class Employee {
         return imageUri;
     }
 
-    public void setImageUri(String imageUri) {
-        this.imageUri = imageUri;
-    }
+
 }

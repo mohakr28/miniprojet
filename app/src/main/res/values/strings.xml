@@ -1,8 +1,38 @@
 <resources>
+    <!-- App Name -->
     <string name="app_name">mini_projet</string>
+
+    <!-- View Modes -->
     <string-array name="view_modes">
         <item>List View</item>
         <item>Grid View</item>
     </string-array>
 
+    <!-- Employee Details -->
+    <string name="employee_photo">Employee Photo</string>
+    <string name="call_employee">Call Employee</string>
+    <string name="sms_employee">Send SMS to Employee</string>
+    <string name="email_employee">Email Employee</string>
+    <string name="delete_employee">Delete Employee</string>
+
+    <!-- Action Descriptions -->
+    <string name="action_call">Call</string>
+    <string name="action_sms">SMS</string>
+    <string name="action_email">Email</string>
+    <string name="action_delete">Delete</string>
+
+    <!-- Empty State -->
+    <string name="empty_list">No employees to display.</string>
+
+    <!-- Errors -->
+    <string name="error_empty_fields">All fields are required.</string>
+    <string name="error_save_failed">Failed to save employee.</string>
+
+    <!-- Success -->
+    <string name="success_save">Employee saved successfully.</string>
+
+    <!-- Button Labels -->
+    <string name="add_employee">Add Employee</string>
+    <string name="edit_employee">Edit Employee</string>
+    <string name="save">Save</string>
 </resources>

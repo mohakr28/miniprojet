@@ -1,36 +1,48 @@
 package com.example.mini_projet;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.InputStream;
 import java.util.List;
 
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder> {
 
     private List<Employee> employeeList;
     private OnEmployeeDeleteListener deleteListener;
+    private boolean isGridView; // New variable to check if GridView or ListView
 
     // Listener interface for delete action
     public interface OnEmployeeDeleteListener {
         void onDelete(Employee employee);
     }
 
-    public EmployeeAdapter(List<Employee> employeeList, OnEmployeeDeleteListener deleteListener) {
+    public EmployeeAdapter(List<Employee> employeeList, OnEmployeeDeleteListener deleteListener, boolean isGridView) {
         this.employeeList = employeeList;
         this.deleteListener = deleteListener;
+        this.isGridView = isGridView; // Set the view type
     }
 
     @Override
     public EmployeeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_employee, parent, false);
+        // نختار الـ layout بناءً على isGridView
+        int layoutRes = isGridView ? R.layout.item_employee_grid : R.layout.item_employee_list;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         return new EmployeeViewHolder(view);
     }
 
@@ -47,8 +59,37 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         // Load image if URI exists
         String imageUri = employee.getImageUri();
         if (imageUri != null && !imageUri.isEmpty()) {
-            Uri uri = Uri.parse(imageUri);
-            holder.employeeImage.setImageURI(uri);
+            try {
+                loadImage(holder.itemView.getContext(), imageUri, holder.employeeImage);
+            } catch (Exception e) {
+                holder.employeeImage.setImageResource(R.drawable.ic_person); // صورة افتراضية
+                Log.e("EmployeeAdapter", "Error loading image: " + e.getMessage(), e);
+            }
+        } else {
+            holder.employeeImage.setImageResource(R.drawable.ic_person); // صورة افتراضية
+        }
+
+        // Handle the layout differently based on the view type (Grid or List)
+        if (isGridView) {
+            // Grid view: image on top, info below, then icons at the bottom
+            holder.employeeImage.setVisibility(View.VISIBLE);
+            holder.firstName.setVisibility(View.VISIBLE);
+            holder.lastName.setVisibility(View.VISIBLE);
+            holder.phone.setVisibility(View.VISIBLE);
+            holder.email.setVisibility(View.VISIBLE);
+            holder.contactPhoneButton.setVisibility(View.VISIBLE);
+            holder.contactSmsButton.setVisibility(View.VISIBLE);
+            holder.contactEmailButton.setVisibility(View.VISIBLE);
+        } else {
+            // List view: no changes needed
+            holder.employeeImage.setVisibility(View.VISIBLE);
+            holder.firstName.setVisibility(View.VISIBLE);
+            holder.lastName.setVisibility(View.VISIBLE);
+            holder.phone.setVisibility(View.VISIBLE);
+            holder.email.setVisibility(View.VISIBLE);
+            holder.contactPhoneButton.setVisibility(View.VISIBLE);
+            holder.contactSmsButton.setVisibility(View.VISIBLE);
+            holder.contactEmailButton.setVisibility(View.VISIBLE);
         }
 
         // Edit functionality on item click
@@ -110,7 +151,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     public static class EmployeeViewHolder extends RecyclerView.ViewHolder {
         TextView firstName, lastName, phone, email;
         ImageView employeeImage;
-        Button deleteButton, contactPhoneButton, contactSmsButton, contactEmailButton;
+        ImageButton deleteButton, contactPhoneButton, contactSmsButton, contactEmailButton;
 
         public EmployeeViewHolder(View itemView) {
             super(itemView);
@@ -130,5 +171,27 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
     public void updateEmployeeList(List<Employee> newEmployeeList) {
         this.employeeList = newEmployeeList;
         notifyDataSetChanged();
+    }
+
+    private static final String TAG = "EmployeeAdapter";
+
+    public static void loadImage(Context context, String imageUri, ImageView imageView) {
+        try {
+            Uri uri = Uri.parse(imageUri);
+            ContentResolver resolver = context.getContentResolver();
+
+            try (InputStream inputStream = resolver.openInputStream(uri)) {
+                if (inputStream != null) {
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    imageView.setImageBitmap(bitmap);
+                } else {
+                    Log.e(TAG, "Unable to open InputStream for URI: " + uri);
+                    imageView.setImageResource(R.drawable.ic_person);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading image: " + e.getMessage(), e);
+            imageView.setImageResource(R.drawable.ic_person);
+        }
     }
 }

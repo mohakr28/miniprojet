@@ -1,83 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#f5f5f5">
+    android:background="@color/colorBackground">
 
-    <!-- Header or Title for View Mode -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select View Mode"
-        android:textSize="18sp"
-        android:textColor="#333"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="8dp"/>
-
-    <!-- RadioGroup for selecting view mode (ListView or GridView) -->
-    <RadioGroup
-        android:id="@+id/viewModeRadioGroup"
+    <!-- Toolbar with Spinner for Dropdown -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center_horizontal"
-        android:padding="10dp"
-        android:background="#ffffff"
-        android:elevation="2dp"
-        android:gravity="center">
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        android:layoutDirection="ltr"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <!-- RadioButton for ListView -->
-        <RadioButton
-            android:id="@+id/radioListView"
+        <!-- Spinner for Dropdown in Toolbar -->
+        <Spinner
+            android:id="@+id/viewModeSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="List View"
-            android:textSize="16sp"
-            android:padding="10dp"
-            android:checked="true" 
-        android:textColor="#000"/>
+            android:spinnerMode="dropdown"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            tools:entries="@array/view_modes"
+            android:drawableEnd="@drawable/ic_menu"
+            android:popupBackground="@drawable/spinner_popup_background"
+            android:layout_gravity="center_vertical" />
+    </androidx.appcompat.widget.Toolbar>
 
-        <!-- RadioButton for GridView -->
-        <RadioButton
-            android:id="@+id/radioGridView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Grid View"
-            android:textSize="16sp"
-            android:padding="10dp"
-            android:textColor="#000"/>
-    </RadioGroup>
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#f5f5f5">
 
-    <!-- Search EditText -->
+
+
+        <!-- Content Below Navbar -->
     <EditText
         android:id="@+id/searchEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/search_bar_background"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="10dp"
         android:hint="Search employees"
         android:inputType="text"
-        android:layout_marginTop="16dp"
         android:padding="12dp"
-        android:textColor="#333"/>
+        android:textColor="@color/colorTextSecondary"
+        android:textColorHint="@color/colorTextSecondary"
+        android:textSize="16sp" />
 
     <!-- RecyclerView for displaying employee data -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:layout_weight="1" />
 
     <!-- Add Employee Button -->
     <Button
         android:id="@+id/addEmployeeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_background"
+        android:clipToOutline="true"
         android:text="Add Employee"
         android:textColor="#fff"
-        android:background="@color/black"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"/>
+        android:textSize="16sp" />
+    </LinearLayout>
 </LinearLayout>

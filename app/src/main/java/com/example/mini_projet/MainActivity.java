@@ -1,14 +1,16 @@
 package com.example.mini_projet;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,9 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private EmployeeDatabaseHelper dbHelper;
     private Button addEmployeeButton;
     private EditText searchEditText;
-    private RadioGroup viewModeRadioGroup;
-    private RadioButton radioListView;
-    private RadioButton radioGridView;
+    private Spinner viewModeSpinner;
     private static final int REQUEST_CALL_PERMISSION = 1;
     private static final int REQUEST_SMS_PERMISSION = 2;
 
@@ -44,28 +44,22 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         addEmployeeButton = findViewById(R.id.addEmployeeButton);
         searchEditText = findViewById(R.id.searchEditText);
-        viewModeRadioGroup = findViewById(R.id.viewModeRadioGroup);
-        radioListView = findViewById(R.id.radioListView);
-        radioGridView = findViewById(R.id.radioGridView);
+        viewModeSpinner = findViewById(R.id.viewModeSpinner);
 
         // Initialize database helper
         dbHelper = new EmployeeDatabaseHelper(this);
 
-        // Set default layout manager (ListView mode)
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // Load employees from the database
+        loadEmployees();
 
         // Add Employee button click listener
         addEmployeeButton.setOnClickListener(v -> {
-            // Start AddEmployeeActivity when button is clicked
             Intent intent = new Intent(MainActivity.this, AddEmployeeActivity.class);
             startActivity(intent);
         });
 
-        // Check and request media permissions
-        checkStoragePermissions();
-
-        // Load employees from the database
-        loadEmployees();
+        // Setup Spinner for view mode selection
+        setupViewModeSpinner();
 
         // Search functionality
         searchEditText.addTextChangedListener(new android.text.TextWatcher() {
@@ -81,24 +75,60 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(android.text.Editable editable) {}
         });
-
-        // Set up the RadioGroup listener to switch between ListView and GridView
-        viewModeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.radioListView) {
-                // Set RecyclerView to ListView layout
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            } else if (checkedId == R.id.radioGridView) {
-                // Set RecyclerView to GridView layout (2 columns in this example)
-                recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-            }
-        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh the employee list when coming back from AddEmployeeActivity
+        // Refresh the employee list when returning to the activity
         loadEmployees();
+    }
+
+    private void setupViewModeSpinner() {
+        // Array of options for view modes
+        String[] viewModes = {"List View", "Grid View"};
+
+        // Create an ArrayAdapter for the Spinner
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, viewModes);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        viewModeSpinner.setAdapter(adapter);
+
+        // Retrieve the saved view mode from SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("ViewModePrefs", MODE_PRIVATE);
+        String savedViewMode = preferences.getString("view_mode", "list");
+
+        // Set the default layout manager and spinner selection based on saved mode
+        if ("list".equals(savedViewMode)) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            viewModeSpinner.setSelection(0);
+        } else if ("grid".equals(savedViewMode)) {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+            viewModeSpinner.setSelection(1);
+        }
+
+        // Set a listener for Spinner item selection
+        viewModeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                SharedPreferences.Editor editor = preferences.edit();
+
+                if (position == 0) {
+                    recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                    editor.putString("view_mode", "list");
+                } else if (position == 1) {
+                    recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
+                    editor.putString("view_mode", "grid");
+                }
+
+                editor.apply(); // Save the selected mode
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Default to List View if nothing is selected
+                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+            }
+        });
     }
 
     // Function to check if media permissions are granted
@@ -106,12 +136,12 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // For Android 13 and above, request READ_MEDIA_IMAGES
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{ android.Manifest.permission.READ_MEDIA_IMAGES }, REQUEST_MEDIA_PERMISSION);
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_MEDIA_PERMISSION);
             }
         } else {
             // For older versions, request READ_EXTERNAL_STORAGE
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{ android.Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_MEDIA_PERMISSION);
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_MEDIA_PERMISSION);
             }
         }
         // Check and request call permission
@@ -132,28 +162,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == REQUEST_MEDIA_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, continue with file operations
                 Toast.makeText(this, "Media access permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                // Permission denied, handle accordingly
                 Toast.makeText(this, "Media access permission denied", Toast.LENGTH_SHORT).show();
             }
         }
-        if(requestCode== REQUEST_CALL_PERMISSION) {
+        if (requestCode == REQUEST_CALL_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // إذن الاتصال الهاتفي تم منحه
                 Toast.makeText(this, "Call permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                // إذن الاتصال الهاتفي تم رفضه
                 Toast.makeText(this, "Call permission denied", Toast.LENGTH_SHORT).show();
             }
         }
-        if(requestCode== REQUEST_SMS_PERMISSION) {
+        if (requestCode == REQUEST_SMS_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // إذن الرسائل النصية تم منحه
                 Toast.makeText(this, "SMS permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                // إذن الرسائل النصية تم رفضه
                 Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show();
             }
         }
@@ -162,24 +186,19 @@ public class MainActivity extends AppCompatActivity {
     // Function to load employees from the database and update the RecyclerView
     private void loadEmployees() {
         List<Employee> employees = dbHelper.getAllEmployees();
-
-        // If the adapter is not yet initialized, initialize it
+        boolean isGridView = true;
         if (adapter == null) {
-            adapter = new EmployeeAdapter(employees, new EmployeeAdapter.OnEmployeeDeleteListener() {
-                @Override
-                public void onDelete(Employee employee) {
-                    // Delete the employee from the database
-                    dbHelper.deleteEmployee(employee.getId());
-                    Toast.makeText(MainActivity.this, "Employee deleted", Toast.LENGTH_SHORT).show();
-                    loadEmployees(); // Refresh the list after deletion
-                }
-            });
+            adapter = new EmployeeAdapter(employees, employee -> {
+                dbHelper.deleteEmployee(employee.getId());
+                Toast.makeText(MainActivity.this, "Employee deleted", Toast.LENGTH_SHORT).show();
+                loadEmployees(); // Refresh the list after deletion
+            },isGridView);
             recyclerView.setAdapter(adapter);
         } else {
-            // If the adapter is already initialized, just update the list
             adapter.updateEmployeeList(employees);
         }
     }
+
 
     // Function to filter employees based on the search query
     private void filterEmployees(String query) {
@@ -190,8 +209,6 @@ public class MainActivity extends AppCompatActivity {
                 filteredList.add(employee);
             }
         }
-
-        // Update the adapter with the filtered list
         adapter.updateEmployeeList(filteredList);
     }
 }

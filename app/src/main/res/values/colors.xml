@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary colors -->
+    <color name="colorPrimary">  #0A92D1</color>
+    <color name="colorPrimaryDark">#1976D2</color> <!-- Dark Blue -->
+    <color name="colorAccent">#03A9F4</color> <!-- Light Blue -->
+
+
+    <!-- Background and text colors -->
+    <color name="colorBackground">#E3F2FD</color> <!-- Light Blue Background -->
+    <color name="colorTextPrimary">#212121</color> <!-- Dark Text -->
+    <color name="colorTextSecondary">#757575</color> <!-- Lighter Text -->
+
+    <color name="white">#FFFFFF</color>
+    <color name="searchBar">#88D6F8</color> <!-- Light Blue -->
+    <color name="bg">#f5f5f5</color> <!-- Light Blue -->
+    <color name="blueLightBg">#CCE7ED</color>
+    <color name="black">#000000</color>
+    <color name="gray">#757575</color>
+    <color name="primary">#6200EE</color>
+    <color name="primary_light">#BB86FC</color>
+    <color name="error">#B00020</color>
 </resources>
