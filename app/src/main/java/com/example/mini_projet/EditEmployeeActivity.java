@@ -44,7 +44,6 @@ public class EditEmployeeActivity extends AppCompatActivity {
         lastNameEditText = findViewById(R.id.lastNameEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
-        employeeImageView = findViewById(R.id.employeeImageView);
         employeeIdTextView = findViewById(R.id.employeeIdTextView);
         saveButton = findViewById(R.id.saveButton);
 
@@ -66,9 +65,6 @@ public class EditEmployeeActivity extends AppCompatActivity {
                 phoneEditText.setText(employee.getPhone());
                 emailEditText.setText(employee.getEmail());
 
-                // Load image using loadImage method
-                String imageUri = employee.getImageUri();
-                loadImage(this, imageUri, employeeImageView);
 
                 // Set employee ID to TextView
                 employeeIdTextView.setText(String.valueOf(employee.getId()));
@@ -104,35 +100,5 @@ public class EditEmployeeActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Load image from URI using Glide or handle special cases.
-     */
-    public static void loadImage(Context context, String imageUri, ImageView imageView) {
-        try {
-            if (imageUri != null && !imageUri.isEmpty()) {
-                Uri uri = Uri.parse(imageUri);
-                Glide.with(context)
-                        .load(uri)
-                        .placeholder(R.drawable.ic_person) // Placeholder image
-                        .error(R.drawable.ic_person)      // Error image
-                        .into(imageView);
-            } else {
-                imageView.setImageResource(R.drawable.ic_person); // Default image
-            }
-        } catch (Exception e) {
-            Log.e("EditEmployeeActivity", "Error loading image: " + e.getMessage(), e);
-        }
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_MEDIA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 }

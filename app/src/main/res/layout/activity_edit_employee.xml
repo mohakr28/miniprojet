@@ -14,17 +14,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Profile Image -->
-        <ImageView
-            android:id="@+id/employeeImageView"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/rounded_background"
-            android:clipToOutline="true"
-            android:contentDescription="Employee Image"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person" /> <!-- Placeholder Image -->
 
         <!-- First Name Input -->
         <EditText
