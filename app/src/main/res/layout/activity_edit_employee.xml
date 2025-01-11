@@ -24,7 +24,7 @@
             android:clipToOutline="true"
             android:contentDescription="Employee Image"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_person" />
+            android:src="@drawable/ic_person" /> <!-- Placeholder Image -->
 
         <!-- First Name Input -->
         <EditText

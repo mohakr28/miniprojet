@@ -2,10 +2,13 @@ package com.example.mini_projet;
 
 public class Employee {
     private int id;
-    private String firstName, lastName, phone, email;
-    private String imageUri;  // تخزين URI كـ String
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String email;
+    private String imageUri;  // تخزين URI للصورة كـ String
 
-    // Constructor مع imageUri من نوع String
+    // Constructor كامل
     public Employee(int id, String firstName, String lastName, String phone, String email, String imageUri) {
         this.id = id;
         this.firstName = firstName;
@@ -15,7 +18,9 @@ public class Employee {
         this.imageUri = imageUri;
     }
 
-    public Employee(int anInt, String string, String string1) {
+    // Constructor بدون URI للصورة (افتراضي)
+    public Employee(int id, String firstName, String lastName, String phone, String email) {
+        this(id, firstName, lastName, phone, email, null);
     }
 
     // Getters and Setters
@@ -63,5 +68,19 @@ public class Employee {
         return imageUri;
     }
 
+    public void setImageUri(String imageUri) {
+        this.imageUri = imageUri;
+    }
 
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", imageUri='" + imageUri + '\'' +
+                '}';
+    }
 }

@@ -1,10 +1,7 @@
 package com.example.mini_projet;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,18 +11,18 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.InputStream;
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder> {
 
+    private static final String TAG = "EmployeeAdapter";
     private List<Employee> employeeList;
     private OnEmployeeDeleteListener deleteListener;
-    private boolean isGridView; // New variable to check if GridView or ListView
+    private boolean isGridView; // Variable to check if GridView or ListView
 
     // Listener interface for delete action
     public interface OnEmployeeDeleteListener {
@@ -68,30 +65,9 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         holder.phone.setText(employee.getPhone());
         holder.email.setText(employee.getEmail());
 
-        // Load image if URI exists
+        // Load image using Glide
         String imageUri = employee.getImageUri();
         loadImage(holder.itemView.getContext(), imageUri, holder.employeeImage);
-
-        // Handle the layout differently based on the view type (Grid or List)
-        if (isGridView) {
-            holder.employeeImage.setVisibility(View.VISIBLE);
-            holder.firstName.setVisibility(View.VISIBLE);
-            holder.lastName.setVisibility(View.VISIBLE);
-            holder.phone.setVisibility(View.VISIBLE);
-            holder.email.setVisibility(View.VISIBLE);
-            holder.contactPhoneButton.setVisibility(View.VISIBLE);
-            holder.contactSmsButton.setVisibility(View.VISIBLE);
-            holder.contactEmailButton.setVisibility(View.VISIBLE);
-        } else {
-            holder.employeeImage.setVisibility(View.VISIBLE);
-            holder.firstName.setVisibility(View.VISIBLE);
-            holder.lastName.setVisibility(View.VISIBLE);
-            holder.phone.setVisibility(View.VISIBLE);
-            holder.email.setVisibility(View.VISIBLE);
-            holder.contactPhoneButton.setVisibility(View.VISIBLE);
-            holder.contactSmsButton.setVisibility(View.VISIBLE);
-            holder.contactEmailButton.setVisibility(View.VISIBLE);
-        }
 
         // Edit functionality on item click
         holder.itemView.setOnClickListener(v -> {
@@ -173,23 +149,16 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.Employ
         }
     }
 
-    private static final String TAG = "EmployeeAdapter";
-
-    // Optimized method for loading images
+    // Optimized method for loading images using Glide
     public static void loadImage(Context context, String imageUri, ImageView imageView) {
         try {
             if (imageUri != null && !imageUri.isEmpty()) {
                 Uri uri = Uri.parse(imageUri);
-                ContentResolver resolver = context.getContentResolver();
-
-                try (InputStream inputStream = resolver.openInputStream(uri)) {
-                    if (inputStream != null) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        imageView.setImageBitmap(bitmap);
-                    } else {
-                        imageView.setImageResource(R.drawable.ic_person);
-                    }
-                }
+                Glide.with(context)
+                        .load(uri)
+                        .placeholder(R.drawable.ic_person) // Placeholder image
+                        .error(R.drawable.ic_person)      // Error image
+                        .into(imageView);
             } else {
                 imageView.setImageResource(R.drawable.ic_person); // Default image
             }
